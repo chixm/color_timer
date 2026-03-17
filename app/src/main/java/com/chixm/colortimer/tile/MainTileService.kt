@@ -43,15 +43,36 @@ class MainTileService : CoroutinesTileService() {
         requestParams: RequestBuilders.TileRequest
     ): TileBuilders.Tile {
         val heartRate = getHeartRate()
-        
-        val singleTileTimeline = TimelineBuilders.Timeline.Builder().addTimelineEntry(
-            TimelineBuilders.TimelineEntry.Builder().setLayout(
-                LayoutElementBuilders.Layout.Builder().setRoot(tileLayout(this, heartRate)).build()
-            ).build()
-        ).build()
+        val heartRateInt = heartRate.toIntOrNull() ?: 0
+
+        val timelineBuilder = TimelineBuilders.Timeline.Builder()
+
+        if (heartRateInt > 100) {
+            val now = Date()
+            val sec = SimpleDateFormat("ss", Locale.getDefault()).format(now).toIntOrNull() ?: 0
+            val isRed = sec % 2 == 1
+            val color = if (isRed) 0xFFFF0000.toInt() else 0xFF000000.toInt() // 赤 or 黒
+            timelineBuilder.addTimelineEntry(
+                TimelineBuilders.TimelineEntry.Builder()
+                    .setLayout(
+                        LayoutElementBuilders.Layout.Builder()
+                            .setRoot(tileLayout(this, heartRate, color)).build()
+                    )
+                    .build()
+            )
+        } else {
+            timelineBuilder.addTimelineEntry(
+                TimelineBuilders.TimelineEntry.Builder()
+                    .setLayout(
+                        LayoutElementBuilders.Layout.Builder()
+                            .setRoot(tileLayout(this, heartRate, -1)).build() // -1: gradient
+                    )
+                    .build()
+            )
+        }
 
         return TileBuilders.Tile.Builder().setResourcesVersion(RESOURCES_VERSION)
-            .setTimeline(singleTileTimeline).build()
+            .setTimeline(timelineBuilder.build()).build()
     }
 
     private fun getHeartRate(): String {
@@ -66,46 +87,114 @@ class MainTileService : CoroutinesTileService() {
     }
 }
 
-private fun tileLayout(context: Context, heartRate: String): LayoutElementBuilders.LayoutElement {
-    val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-    return LayoutElementBuilders.Box.Builder()
-        .setWidth(DimensionBuilders.expand())
-        .setHeight(DimensionBuilders.expand())
-        .setModifiers(
-            ModifiersBuilders.Modifiers.Builder()
-                .setBackground(
-                    ModifiersBuilders.Background.Builder()
-                        .setColor(ColorBuilders.argb(0xFFADD8E6.toInt()))
-                        .build()
-                )
-                .build()
-        )
-        .addContent(
-            PrimaryLayout.Builder(buildDeviceParameters(context.resources))
-                .setContent(
-                    LayoutElementBuilders.Column.Builder()
-                        .addContent(
-                            Text.Builder(context, time)
-                                .setTypography(Typography.TYPOGRAPHY_DISPLAY1)
-                                .setColor(ColorBuilders.argb(0xFF000000.toInt()))
-                                .build()
-                        )
-                        .addContent(
-                            LayoutElementBuilders.Spacer.Builder()
-                                .setHeight(DimensionBuilders.dp(8f))
-                                .build()
-                        )
-                        .addContent(
-                            Text.Builder(context, "❤️ $heartRate")
-                                .setTypography(Typography.TYPOGRAPHY_TITLE2)
-                                .setColor(ColorBuilders.argb(0xFFCC0000.toInt()))
-                                .build()
-                        )
-                        .build()
-                )
-                .build()
-        )
-        .build()
+private fun tileLayout(context: Context, heartRate: String, backgroundColor: Int): LayoutElementBuilders.LayoutElement {
+    val now = Date()
+    val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
+    val date = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(now)
+    val weekday = SimpleDateFormat("EEE", Locale.getDefault()).format(now)
+
+    if (backgroundColor == -1) {
+        // 現状のTile APIでは画像背景は未サポート。単色（薄青）で代用、またはBox重ね疑似グラデーション案を利用。
+        return LayoutElementBuilders.Box.Builder()
+            .setWidth(DimensionBuilders.expand())
+            .setHeight(DimensionBuilders.expand())
+            .setModifiers(
+                ModifiersBuilders.Modifiers.Builder()
+                    .setBackground(
+                        ModifiersBuilders.Background.Builder()
+                            .setColor(ColorBuilders.argb(0xFFADD8E6.toInt()))
+                            .build()
+                    )
+                    .build()
+            )
+            .addContent(
+                PrimaryLayout.Builder(buildDeviceParameters(context.resources))
+                    .setContent(
+                        LayoutElementBuilders.Column.Builder()
+                            .addContent(
+                                Text.Builder(context, time)
+                                    .setTypography(Typography.TYPOGRAPHY_DISPLAY1)
+                                    .setColor(ColorBuilders.argb(0xFF000000.toInt()))
+                                    .build()
+                            )
+                            .addContent(
+                                LayoutElementBuilders.Spacer.Builder()
+                                    .setHeight(DimensionBuilders.dp(0f))
+                                    .build()
+                            )
+                            .addContent(
+                                Text.Builder(context, "$date ($weekday)")
+                                    .setTypography(Typography.TYPOGRAPHY_TITLE3)
+                                    .setColor(ColorBuilders.argb(0xFF333333.toInt()))
+                                    .build()
+                            )
+                            .addContent(
+                                LayoutElementBuilders.Spacer.Builder()
+                                    .setHeight(DimensionBuilders.dp(8f))
+                                    .build()
+                            )
+                            .addContent(
+                                Text.Builder(context, "❤️ $heartRate")
+                                    .setTypography(Typography.TYPOGRAPHY_TITLE2)
+                                    .setColor(ColorBuilders.argb(0xFFCC0000.toInt()))
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .build()
+            )
+            .build()
+    } else {
+        return LayoutElementBuilders.Box.Builder()
+            .setWidth(DimensionBuilders.expand())
+            .setHeight(DimensionBuilders.expand())
+            .setModifiers(
+                ModifiersBuilders.Modifiers.Builder()
+                    .setBackground(
+                        ModifiersBuilders.Background.Builder()
+                            .setColor(ColorBuilders.argb(backgroundColor))
+                            .build()
+                    )
+                    .build()
+            )
+            .addContent(
+                PrimaryLayout.Builder(buildDeviceParameters(context.resources))
+                    .setContent(
+                        LayoutElementBuilders.Column.Builder()
+                            .addContent(
+                                Text.Builder(context, time)
+                                    .setTypography(Typography.TYPOGRAPHY_DISPLAY1)
+                                    .setColor(ColorBuilders.argb(0xFF000000.toInt()))
+                                    .build()
+                            )
+                            .addContent(
+                                LayoutElementBuilders.Spacer.Builder()
+                                    .setHeight(DimensionBuilders.dp(0f))
+                                    .build()
+                            )
+                            .addContent(
+                                Text.Builder(context, "$date ($weekday)")
+                                    .setTypography(Typography.TYPOGRAPHY_TITLE3)
+                                    .setColor(ColorBuilders.argb(0xFF333333.toInt()))
+                                    .build()
+                            )
+                            .addContent(
+                                LayoutElementBuilders.Spacer.Builder()
+                                    .setHeight(DimensionBuilders.dp(8f))
+                                    .build()
+                            )
+                            .addContent(
+                                Text.Builder(context, "❤️ $heartRate")
+                                    .setTypography(Typography.TYPOGRAPHY_TITLE2)
+                                    .setColor(ColorBuilders.argb(0xFFCC0000.toInt()))
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .build()
+            )
+            .build()
+    }
 }
 
 @Preview(
@@ -115,6 +204,19 @@ private fun tileLayout(context: Context, heartRate: String): LayoutElementBuilde
     showBackground = true
 )
 @Composable
+
 fun TilePreview() {
-    LayoutRootPreview(root = tileLayout(LocalContext.current, "75"))
+    LayoutRootPreview(root = tileLayout(LocalContext.current, "75", backgroundColor = -1))
+}
+
+@Preview(
+    device = Devices.WEAR_OS_SMALL_ROUND,
+    showSystemUi = true,
+    backgroundColor = 0xff000000,
+    showBackground = true
+)
+@Composable
+
+fun TileHighHeartRatePreview() {
+    LayoutRootPreview(root = tileLayout(LocalContext.current, "105", 0xFFFF0000.toInt()))
 }
