@@ -8,20 +8,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
-import androidx.wear.tiles.ColorBuilders
-import androidx.wear.tiles.DimensionBuilders
-import androidx.wear.tiles.LayoutElementBuilders
-import androidx.wear.tiles.ModifiersBuilders
+import androidx.wear.protolayout.ColorBuilders
+import androidx.wear.protolayout.DimensionBuilders
+import androidx.wear.protolayout.LayoutElementBuilders
+import androidx.wear.protolayout.ModifiersBuilders
+import androidx.wear.protolayout.ResourceBuilders
+import androidx.wear.protolayout.TimelineBuilders
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.layouts.PrimaryLayout
 import androidx.wear.tiles.RequestBuilders
-import androidx.wear.tiles.ResourceBuilders
 import androidx.wear.tiles.TileBuilders
-import androidx.wear.tiles.TimelineBuilders
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.PrimaryLayout
+import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.tools.LayoutRootPreview
 import com.google.android.horologist.compose.tools.buildDeviceParameters
-import com.google.android.horologist.tiles.CoroutinesTileService
+import com.google.android.horologist.tiles.SuspendingTileService
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,7 +32,8 @@ private const val RESOURCES_VERSION = "0"
 /**
  * Tile that shows time and heart rate on a light blue background.
  */
-class MainTileService : CoroutinesTileService() {
+@OptIn(ExperimentalHorologistApi::class)
+class MainTileService : SuspendingTileService() {
 
     override suspend fun resourcesRequest(
         requestParams: RequestBuilders.ResourcesRequest
@@ -72,7 +74,7 @@ class MainTileService : CoroutinesTileService() {
         }
 
         return TileBuilders.Tile.Builder().setResourcesVersion(RESOURCES_VERSION)
-            .setTimeline(timelineBuilder.build()).build()
+            .setTileTimeline(timelineBuilder.build()).build()
     }
 
     private fun getHeartRate(): String {
@@ -109,6 +111,7 @@ private fun tileLayout(context: Context, heartRate: String, backgroundColor: Int
             )
             .addContent(
                 PrimaryLayout.Builder(buildDeviceParameters(context.resources))
+                    .setResponsiveContentInsetEnabled(true)
                     .setContent(
                         LayoutElementBuilders.Column.Builder()
                             .addContent(
@@ -159,6 +162,7 @@ private fun tileLayout(context: Context, heartRate: String, backgroundColor: Int
             )
             .addContent(
                 PrimaryLayout.Builder(buildDeviceParameters(context.resources))
+                    .setResponsiveContentInsetEnabled(true)
                     .setContent(
                         LayoutElementBuilders.Column.Builder()
                             .addContent(
