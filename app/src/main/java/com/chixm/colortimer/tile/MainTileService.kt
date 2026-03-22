@@ -19,6 +19,7 @@ import androidx.wear.protolayout.material.Typography
 import androidx.wear.protolayout.material.layouts.PrimaryLayout
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders
+import com.chixm.colortimer.R
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.tools.LayoutRootPreview
 import com.google.android.horologist.compose.tools.buildDeviceParameters
@@ -38,7 +39,30 @@ class MainTileService : SuspendingTileService() {
     override suspend fun resourcesRequest(
         requestParams: RequestBuilders.ResourcesRequest
     ): ResourceBuilders.Resources {
-        return ResourceBuilders.Resources.Builder().setVersion(RESOURCES_VERSION).build()
+        // 画像リソースを登録（API 34+）
+        val builder = ResourceBuilders.Resources.Builder().setVersion(RESOURCES_VERSION)
+        builder.addIdToImageMapping(
+            "bg_image",
+            ResourceBuilders.ImageResource.Builder()
+                .setAndroidResourceByResId(
+                    ResourceBuilders.AndroidImageResourceByResId.Builder()
+                        .setResourceId(R.drawable.tile_preview)
+                        .build()
+                )
+                .build()
+        )
+        // tile_preview2.png を bg_image2 として登録
+        builder.addIdToImageMapping(
+            "bg_image2",
+            ResourceBuilders.ImageResource.Builder()
+                .setAndroidResourceByResId(
+                    ResourceBuilders.AndroidImageResourceByResId.Builder()
+                        .setResourceId(R.drawable.tile_preview2)
+                        .build()
+                )
+                .build()
+        )
+        return builder.build()
     }
 
     override suspend fun tileRequest(
@@ -95,18 +119,17 @@ private fun tileLayout(context: Context, heartRate: String, backgroundColor: Int
     val date = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(now)
     val weekday = SimpleDateFormat("EEE", Locale.getDefault()).format(now)
 
+    // API 34以降: 画像背景を利用
     if (backgroundColor == -1) {
-        // 現状のTile APIでは画像背景は未サポート。単色（薄青）で代用、またはBox重ね疑似グラデーション案を利用。
         return LayoutElementBuilders.Box.Builder()
             .setWidth(DimensionBuilders.expand())
             .setHeight(DimensionBuilders.expand())
-            .setModifiers(
-                ModifiersBuilders.Modifiers.Builder()
-                    .setBackground(
-                        ModifiersBuilders.Background.Builder()
-                            .setColor(ColorBuilders.argb(0xFFADD8E6.toInt()))
-                            .build()
-                    )
+            // 画像を背景に配置
+            .addContent(
+                LayoutElementBuilders.Image.Builder()
+                    .setWidth(DimensionBuilders.expand())
+                    .setHeight(DimensionBuilders.expand())
+                    .setResourceId("bg_image")
                     .build()
             )
             .addContent(
