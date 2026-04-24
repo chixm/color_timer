@@ -106,9 +106,9 @@ class MainTileService : SuspendingTileService() {
             != PackageManager.PERMISSION_GRANTED) {
             "No Perm"
         } else {
-            // In a real app, you would fetch the last known heart rate from a database 
-            // or Health Services. For this example, we use a placeholder.
-            "72"
+            val sharedPreferences = getSharedPreferences("heart_rate_prefs", MODE_PRIVATE)
+            val heartRate = sharedPreferences.getInt("latest_heart_rate", 0)
+            if (heartRate > 0) heartRate.toString() else "No Data"
         }
     }
 }

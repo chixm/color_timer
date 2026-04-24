@@ -6,6 +6,7 @@
 
 package com.chixm.colortimer.presentation
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,12 +23,14 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
+import com.chixm.colortimer.HeartRateService
 import com.chixm.colortimer.R
 import com.chixm.colortimer.presentation.theme.ColorTimerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        startService(Intent(this, HeartRateService::class.java))
         setContent {
             WearApp("Android")
         }

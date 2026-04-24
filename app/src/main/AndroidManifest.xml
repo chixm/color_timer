@@ -26,7 +26,7 @@
                 android:value="SHORT_TEXT" />
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0" />
+                android:value="600" />
         </service>
         <service
             android:name=".tile.MainTileService"
@@ -41,6 +41,10 @@
                 android:name="androidx.wear.tiles.PREVIEW"
                 android:resource="@drawable/tile_preview" />
         </service>
+
+        <service
+            android:name=".HeartRateService"
+            android:exported="false" />
 
         <uses-library
             android:name="com.google.android.wearable"

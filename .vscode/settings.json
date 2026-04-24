@@ -1,3 +1,9 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "chat.tools.terminal.autoApprove": {
+        "/^python -c \"import zipfile, pathlib; root=pathlib\\.Path\\('C:/Users/makot/\\.gradle/caches/modules-2/files-2\\.1/androidx\\.health/health-services-client/1\\.0\\.0'\\); src=next\\(root\\.rglob\\('\\*sources\\.jar'\\)\\); z=zipfile\\.ZipFile\\(src\\); print\\(z\\.read\\('androidx/health/services/client/data/SampleDataPoint\\.kt'\\)\\.decode\\('utf-8'\\)\\); z\\.close\\(\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
 }
