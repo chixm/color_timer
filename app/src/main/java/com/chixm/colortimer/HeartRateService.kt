@@ -11,6 +11,8 @@ import androidx.health.services.client.PassiveListenerCallback
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.PassiveListenerConfig
+private const val TAG = "HeartRateService"
+
 class HeartRateService : Service() {
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -18,6 +20,7 @@ class HeartRateService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.i(TAG, "HeartRateService started")
         sharedPreferences = getSharedPreferences("heart_rate_prefs", MODE_PRIVATE)
         val healthClient = HealthServices.getClient(this)
         passiveClient = healthClient.passiveMonitoringClient
@@ -31,9 +34,13 @@ class HeartRateService : Service() {
             override fun onNewDataPointsReceived(dataPoints: DataPointContainer) {
                 // DataPointContainer から指定された DataType のデータを取得
                 val heartRateDataPoints = dataPoints.getData(DataType.HEART_RATE_BPM)
+                Log.i(TAG, "onNewDataPointsReceived count=${heartRateDataPoints.size}")
+
                 // 最新の心拍数を取得し、NumberならIntに変換
                 val latestHeartRate = heartRateDataPoints.lastOrNull()?.value
                     .let { if (it is Number) it.toInt() else 0 }
+
+                Log.i(TAG, "latestHeartRate=$latestHeartRate")
                 saveHeartRate(latestHeartRate)
             }
 

@@ -2,12 +2,15 @@ package com.chixm.colortimer.tile
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import com.chixm.colortimer.HeartRateService
 import androidx.wear.protolayout.ColorBuilders
 import androidx.wear.protolayout.DimensionBuilders
 import androidx.wear.protolayout.LayoutElementBuilders
@@ -33,6 +36,8 @@ private const val RESOURCES_VERSION = "0"
 /**
  * Tile that shows time and heart rate on a light blue background.
  */
+private const val TAG = "MainTileService"
+
 @OptIn(ExperimentalHorologistApi::class)
 class MainTileService : SuspendingTileService() {
 
@@ -68,7 +73,14 @@ class MainTileService : SuspendingTileService() {
     override suspend fun tileRequest(
         requestParams: RequestBuilders.TileRequest
     ): TileBuilders.Tile {
-        val heartRate = getHeartRate()
+        applicationContext.startService(Intent(applicationContext, HeartRateService::class.java))
+
+        val heartRate = try {
+            getHeartRate()
+        } catch (e: Exception) {
+            Log.w(TAG, "tileRequest failed", e)
+            "No Data"
+        }
         val heartRateInt = heartRate.toIntOrNull() ?: 0
 
         val timelineBuilder = TimelineBuilders.Timeline.Builder()
@@ -102,11 +114,11 @@ class MainTileService : SuspendingTileService() {
     }
 
     private fun getHeartRate(): String {
-        return if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) 
+        return if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BODY_SENSORS) 
             != PackageManager.PERMISSION_GRANTED) {
             "No Perm"
         } else {
-            val sharedPreferences = getSharedPreferences("heart_rate_prefs", MODE_PRIVATE)
+            val sharedPreferences = applicationContext.getSharedPreferences("heart_rate_prefs", MODE_PRIVATE)
             val heartRate = sharedPreferences.getInt("latest_heart_rate", 0)
             if (heartRate > 0) heartRate.toString() else "No Data"
         }
