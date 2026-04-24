@@ -85,16 +85,12 @@ class MainTileService : SuspendingTileService() {
 
         val timelineBuilder = TimelineBuilders.Timeline.Builder()
 
-        if (heartRateInt > 100) {
-            val now = Date()
-            val sec = SimpleDateFormat("ss", Locale.getDefault()).format(now).toIntOrNull() ?: 0
-            val isRed = sec % 2 == 1
-            val color = if (isRed) 0xFFFF0000.toInt() else 0xFF000000.toInt() // 赤 or 黒
+        if (heartRateInt > 80) {
             timelineBuilder.addTimelineEntry(
                 TimelineBuilders.TimelineEntry.Builder()
                     .setLayout(
                         LayoutElementBuilders.Layout.Builder()
-                            .setRoot(tileLayout(this, heartRate, color)).build()
+                            .setRoot(tileLayout(this, heartRate, -1)).build()
                     )
                     .build()
             )
@@ -103,7 +99,7 @@ class MainTileService : SuspendingTileService() {
                 TimelineBuilders.TimelineEntry.Builder()
                     .setLayout(
                         LayoutElementBuilders.Layout.Builder()
-                            .setRoot(tileLayout(this, heartRate, -1)).build() // -1: gradient
+                            .setRoot(tileLayout(this, heartRate, 0)).build() // 0: light blue
                     )
                     .build()
             )
@@ -132,7 +128,13 @@ private fun tileLayout(context: Context, heartRate: String, backgroundColor: Int
     val weekday = SimpleDateFormat("EEE", Locale.getDefault()).format(now)
 
     // API 34以降: 画像背景を利用
-    if (backgroundColor == -1) {
+    val imageResourceId = when (backgroundColor) {
+        -1 -> "bg_image2"
+        0 -> "bg_image"
+        else -> null
+    }
+
+    if (imageResourceId != null) {
         return LayoutElementBuilders.Box.Builder()
             .setWidth(DimensionBuilders.expand())
             .setHeight(DimensionBuilders.expand())
@@ -141,7 +143,7 @@ private fun tileLayout(context: Context, heartRate: String, backgroundColor: Int
                 LayoutElementBuilders.Image.Builder()
                     .setWidth(DimensionBuilders.expand())
                     .setHeight(DimensionBuilders.expand())
-                    .setResourceId("bg_image")
+                    .setResourceId(imageResourceId)
                     .build()
             )
             .addContent(
