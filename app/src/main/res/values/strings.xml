@@ -9,4 +9,10 @@
     <string name="title_activity_presentation._main">presentation.MainActivity</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="complication_label">ColorTimer complication</string>
+    <string name="background_color_setting">Background color</string>
+    <string name="background_color_setting_description">Background color for the watch face</string>
+    <string name="background_color_setting_light">Light</string>
+    <string name="background_color_setting_light_screen_reader">Light background</string>
+    <string name="background_color_setting_dark">Dark</string>
+    <string name="background_color_setting_dark_screen_reader">Dark background</string>
 </resources>
